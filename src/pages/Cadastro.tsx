@@ -1,100 +1,116 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { cadastrarUsuario } from "../services/authService";
-import Layout from "../components/Layout";
+import axios from "axios";
 
 function Cadastro() {
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [erro, setErro] = useState("");
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    nome: "",
-    email: "",
-    senha: "",
-  });
 
-  const [mensagem, setMensagem] = useState<string | null>(null);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleCadastro = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!formData.nome || !formData.email || !formData.senha) {
-      setMensagem("Preencha todos os campos!");
-      return;
-    }
+    setErro("");
 
     try {
-      const response = await cadastrarUsuario(formData);
-      if (response.status === 201) {
-        setMensagem("Cadastro realizado com sucesso! Redirecionando...");
-        setTimeout(() => navigate("/"), 2000);
-      }
-    } catch (error) {
-      setMensagem("Erro ao cadastrar. Verifique os dados e tente novamente.");
+      await axios.post("http://localhost:8080/auth/cadastro", {
+        nome,
+        email,
+        senha,
+      }, {
+        withCredentials: true,
+      });
+      navigate("/");
+    } catch (err) {
+      setErro("Erro ao cadastrar. Verifique os dados e tente novamente.");
     }
   };
 
   return (
-    <Layout>
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-          <h2 className="text-2xl font-bold text-center text-gray-700 mb-6">Cadastro</h2>
+    <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          Cadastro
+        </h2>
+      </div>
 
-          {mensagem && <p className="text-center text-red-500">{mensagem}</p>}
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {erro && (
+            <div className="mb-4 text-sm text-red-600 text-center">
+              {erro}
+            </div>
+          )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleCadastro} className="space-y-6">
             <div>
-              <label className="block text-gray-700">Nome:</label>
+              <label htmlFor="nome" className="block text-sm font-medium text-gray-700">
+                Nome
+              </label>
               <input
+                id="nome"
                 type="text"
-                name="nome"
-                value={formData.nome}
-                onChange={handleChange}
-                className="w-full p-2 border rounded"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Digite seu nome"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-gray-700">E-mail:</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                E-mail
+              </label>
               <input
+                id="email"
                 type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full p-2 border rounded"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Digite seu e-mail"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-gray-700">Senha:</label>
+              <label htmlFor="senha" className="block text-sm font-medium text-gray-700">
+                Senha
+              </label>
               <input
+                id="senha"
                 type="password"
-                name="senha"
-                value={formData.senha}
-                onChange={handleChange}
-                className="w-full p-2 border rounded"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Digite sua senha"
                 required
               />
             </div>
 
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-700 transition"
-            >
-              Cadastrar
-            </button>
+            <div>
+              <button
+                type="submit"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Cadastrar
+              </button>
+            </div>
           </form>
 
-          <p className="text-center text-gray-600 mt-4">
-            Já tem uma conta? <a href="/" className="text-blue-500 hover:underline">Faça login</a>
-          </p>
+          <div className="mt-6 text-center">
+            <span className="text-sm text-gray-600">Já tem uma conta?</span>
+            <button
+              onClick={() => navigate("/")}
+              className="text-sm text-blue-600 hover:text-blue-500 ml-2"
+            >
+              Faça login
+            </button>
+          </div>
         </div>
       </div>
-    </Layout>
+    </div>
   );
 }
 
